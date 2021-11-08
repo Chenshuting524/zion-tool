@@ -78,10 +78,11 @@ func HandleTPS(ctx *cli.Context) error {
 				hashlist := sendTransfer(acc, to, txn)
 				//发完交易之后,开始遍历hash,查询交易是否全部落账
 				if hashlist != nil {
+					fmt.Println("hashlist is not nil")
 					defer wg.Done()
 				}
 				for i := range hashlist {
-					log.Info("query transaction status")
+					fmt.Println("query transaction status")
 				retryHash:
 					_, pending, err := acc.TransactionByHash(*hashlist[i])
 					if err != nil {
