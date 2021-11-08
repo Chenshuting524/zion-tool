@@ -103,13 +103,13 @@ func (c *Account) NewUnsignedTx(to common.Address, amount *big.Int, data []byte)
 	nonce := c.Nonce()
 	gas := DefaultGasLimit().Uint64()
 	price := DefaultGasPrice()
-	tx:=types.NewTx(&types.LegacyTx{
-		Nonce:     nonce,
-		GasPrice:  price,
-		Gas:       gas,
-		To:        &to,
-		Value:     amount,
-		Data:      data,
+	tx := types.NewTx(&types.LegacyTx{
+		Nonce:    nonce,
+		GasPrice: price,
+		Gas:      gas,
+		To:       &to,
+		Value:    amount,
+		Data:     data,
 	})
 
 	return tx
@@ -173,12 +173,12 @@ func (c *Account) CallContract(caller, contractAddr common.Address, payload []by
 	return c.client.CallContract(context.Background(), arg, nil)
 }
 
-func (c *Account) PendingTransactionNum()  (uint, error) {
+func (c *Account) PendingTransactionNum() (uint, error) {
 	return c.client.PendingTransactionCount(context.Background())
 }
 
-func (c *Account) TransactionByHash(hash common.Hash)  (*types.Transaction, bool,error) {
-	return c.client.TransactionByHash(context.Background(),hash)
+func (c *Account) TransactionByHash(hash common.Hash) (*types.Transaction, bool, error) {
+	return c.client.TransactionByHash(context.Background(), hash)
 }
 
 func AddGasPrice(inc uint64) {
