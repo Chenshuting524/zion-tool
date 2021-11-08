@@ -77,11 +77,10 @@ func HandleTPS(ctx *cli.Context) error {
 			go func(acc *sdk.Account, to common.Address, txn int) {
 				hashlist := sendTransfer(acc, to, txn)
 				//发完交易之后,开始遍历hash,查询交易是否全部落账
-				if hashlist != nil {
+				/*if hashlist != nil {
 					fmt.Println("hashlist is not nil")
-					defer wg.Done()
-				}
-				fmt.Println(hashlist)
+
+				}*/
 				for i := range hashlist {
 					log.Info("query transaction status")
 					fmt.Println("query transaction status")
@@ -94,12 +93,13 @@ func HandleTPS(ctx *cli.Context) error {
 						goto retryHash
 					}
 					if !pending {
+
 						continue
 					} else {
 						goto retryHash
 					}
 				}
-
+				defer wg.Done()
 				//等待所有线程结束后开启新一轮
 			}(acc, to, txn)
 		}
