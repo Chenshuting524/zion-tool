@@ -85,11 +85,11 @@ func HandleTPS(ctx *cli.Context) error {
 				for i := range hashlist {
 					log.Info("query transaction status")
 					fmt.Println("query transaction status")
+					fmt.Println(hashlist[i])
 				retryHash:
-					fmt.Println("retry")
 					_, pending, err := acc.TransactionByHash(hashlist[i])
 					if err != nil {
-						fmt.Println("error")
+						fmt.Println(err)
 						log.Info("failed to call TransactionByHash: %v", err)
 						goto retryHash
 					}
