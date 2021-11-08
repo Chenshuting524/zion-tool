@@ -74,9 +74,12 @@ func HandleTPS(ctx *cli.Context) error {
 		for _, acc := range accounts {
 			wg.Add(1)
 			println("start multi process")
-			go func(acc *sdk.Account, to common.Address, txn int) {	
+			go func(acc *sdk.Account, to common.Address, txn int) {
 				hashlist := sendTransfer(acc, to, txn)
 				//发完交易之后,开始遍历hash,查询交易是否全部落账
+				if hashlist != nil {
+					defer wg.Done()
+				}
 				for i := range hashlist {
 					log.Info("query transaction status")
 				retryHash:
@@ -91,7 +94,7 @@ func HandleTPS(ctx *cli.Context) error {
 						goto retryHash
 					}
 				}
-				defer wg.Done()
+
 				//等待所有线程结束后开启新一轮
 			}(acc, to, txn)
 		}
@@ -104,9 +107,6 @@ func HandleTPS(ctx *cli.Context) error {
 	}
 	return nil
 }
-
-
-
 
 func sendTransfer(acc *sdk.Account, to common.Address, txn int) []*common.Hash {
 	hashlist := make([]*common.Hash, txn)
