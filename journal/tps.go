@@ -114,7 +114,7 @@ func HandleTPS(ctx *cli.Context) error {
 }
 
 func sendTransfer(acc *sdk.Account, to common.Address, txn int) []common.Hash {
-	hashlist := make([]common.Hash, txn)
+	hashlist := make([]common.Hash, 0)
 	for i := 0; i < txn; i++ {
 		txhash, err := acc.Transfer(to, amountPerTx)
 		if err != nil {
