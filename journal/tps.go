@@ -81,12 +81,13 @@ func HandleTPS(ctx *cli.Context) error {
 					fmt.Println("hashlist is not nil")
 					defer wg.Done()
 				}
+				fmt.Println(hashlist)
 				for i := range hashlist {
 					log.Info("query transaction status")
 					fmt.Println("query transaction status")
 				retryHash:
 					fmt.Println("retry")
-					_, pending, err := acc.TransactionByHash(*hashlist[i])
+					_, pending, err := acc.TransactionByHash(hashlist[i])
 					if err != nil {
 						fmt.Println("error")
 						log.Info("failed to call TransactionByHash: %v", err)
@@ -112,15 +113,15 @@ func HandleTPS(ctx *cli.Context) error {
 	return nil
 }
 
-func sendTransfer(acc *sdk.Account, to common.Address, txn int) []*common.Hash {
-	hashlist := make([]*common.Hash, txn)
+func sendTransfer(acc *sdk.Account, to common.Address, txn int) []common.Hash {
+	hashlist := make([]common.Hash, txn)
 	for i := 0; i < txn; i++ {
 		txhash, err := acc.Transfer(to, amountPerTx)
 		if err != nil {
 			fmt.Println("transfer failed", "err", err)
 		} else {
 			//发送成功，将hash保存下来
-			hashlist = append(hashlist, &txhash)
+			hashlist = append(hashlist, txhash)
 			//fmt.Println("transfer success", "hash", hash)
 		}
 	}
