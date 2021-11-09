@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/urfave/cli"
 )
@@ -76,6 +77,10 @@ func PolyChainListen(ctx *cli.Context) error {
 		curBlockNum += 1
 		cnt += 1
 	}
-	fmt.Println("finish listen")
+	hash := common.HexToAddress("0x87723ef9cad09ea707ddb5b90d068a9add5ed9a770279c51556f9f86efa051d9")
+
+	_, pending, err := client.TransactionByHash(context.Background(), hash.Hash())
+
+	fmt.Println(pending, "finish listen")
 	return nil
 }
