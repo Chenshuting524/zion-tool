@@ -129,12 +129,12 @@ func (c *Account) SendTx(signedTx *types.Transaction) error {
 
 	return c.client.SendTransaction(context.Background(), signedTx)
 }
-
+var aaa = &goverABI
 func (c *Account) Epoch() (uint64, error) {
 	contract := native.NativeContractAddrMap[native.NativeGovernance]
 	caller := c.Address()
 	method := governance.MethodGetEpoch
-	payload, err := utils.PackMethod(goverABI, method)
+	payload, err := utils.PackMethod(aaa, method)
 	if err != nil {
 		return 0, err
 	}
@@ -144,7 +144,7 @@ func (c *Account) Epoch() (uint64, error) {
 		return 0, err
 	}
 	output := new(governance.MethodEpochOutput)
-	if err := utils.UnpackOutputs(goverABI, method, output, enc); err != nil {
+	if err := utils.UnpackOutputs(aaa, method, output, enc); err != nil {
 		return 0, err
 	}
 	return output.Epoch.Uint64(), nil
@@ -179,6 +179,10 @@ func (c *Account) PendingTransactionNum() (uint, error) {
 
 func (c *Account) TransactionByHash(hash common.Hash) (*types.Transaction, bool, error) {
 	return c.client.TransactionByHash(context.Background(), hash)
+}
+
+func (c *Account) TransactionReceipt(hash common.Hash) (*types.Receipt, error) {
+	return c.client.TransactionReceipt(context.Background(), hash)
 }
 
 func AddGasPrice(inc uint64) {

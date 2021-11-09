@@ -76,5 +76,6 @@ func PolyChainListen(ctx *cli.Context) error {
 		curBlockNum += 1
 		cnt += 1
 	}
+	fmt.Println("finish listen")
 	return nil
 }

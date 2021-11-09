@@ -74,7 +74,7 @@ func HandleTPS(ctx *cli.Context) error {
 		for _, acc := range accounts {
 			wg.Add(1)
 			println("start multi process")
-			go func(acc *sdk.Account, to common.Address, txn int) {
+			go func(acc *sdk.Account, to common.Address, txn int, period int) {
 				hashlist := sendTransfer(acc, to, txn)
 				//发完交易之后,开始遍历hash,查询交易是否全部落账
 				/*if hashlist != nil {
@@ -83,9 +83,14 @@ func HandleTPS(ctx *cli.Context) error {
 				}*/
 				for i := range hashlist {
 					log.Info("query transaction status")
-					fmt.Println("query transaction status")
-					fmt.Println(hashlist[i])
-				retryHash:
+					//fmt.Println("query transaction status")
+					//fmt.Println(hashlist[i])
+					err = WaitTxConfirm(acc, hashlist[i], period)
+					if err != nil {
+						fmt.Println("error")
+						continue
+					}
+					/*retryHash:
 					_, pending, err := acc.TransactionByHash(hashlist[i])
 					if err != nil {
 						fmt.Println(err)
@@ -93,23 +98,27 @@ func HandleTPS(ctx *cli.Context) error {
 						goto retryHash
 					}
 					if !pending {
-
-						continue
+						fmt.Println("")
+						break
 					} else {
 						goto retryHash
-					}
+					}*/
 				}
+				fmt.Println("round1111")
 				defer wg.Done()
-				//等待所有线程结束后开启新一轮
-			}(acc, to, txn)
+				//等待所有线程结束后开启新一轮vi
+			}(acc, to, txn, period)
 		}
 		wg.Wait()
+		//看一下是不是还在时间内
+		fmt.Println("round")
 		if time.Now().Before(end) {
 			continue
 		} else {
 			break
 		}
 	}
+	fmt.Println("finish")
 	return nil
 }
 
@@ -128,6 +137,35 @@ func sendTransfer(acc *sdk.Account, to common.Address, txn int) []common.Hash {
 	return hashlist
 }
 
-func WaitTxConfirm() {
+func WaitTxConfirm(acc *sdk.Account, hash common.Hash, period int) error {
+	//ticker := time.NewTicker(time.Second * 1)
+	end := time.Now().Add(time.Duration(period))
+	for {
+		_, pending, err := acc.TransactionByHash(hash)
+		if err != nil {
+			log.Info("failed to call TransactionByHash: %v", err)
+			if time.Now().After(end) {
+				break
+			}
+			continue
+		}
+		if !pending {
+			break
+		}
+		if time.Now().Before(end) {
+			continue
+		}
+		log.Info("Transaction pending for more than 1 min, check transaction %s on explorer yourself, make sure it's confirmed.", hash.Hex())
+		return nil
+	}
+	tx, err := acc.TransactionReceipt(hash)
+	if err != nil {
+		return fmt.Errorf("faild to get receipt %s", hash.Hex())
+	}
 
+	if tx.Status == 0 {
+		return fmt.Errorf("receipt failed %s", hash.Hex())
+	}
+
+	return nil
 }
