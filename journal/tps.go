@@ -69,11 +69,12 @@ func HandleTPS(ctx *cli.Context) error {
 	to := master.Address()
 	//while
 	end := time.Now().Add(time.Duration(period))
-	for {
+	for time.Now().Before(end) {
+		println("start multi process")
 		var wg sync.WaitGroup
 		for _, acc := range accounts {
-			println("start multi process")
 			wg.Add(1)
+
 			go func(acc *sdk.Account, to common.Address, txn int, period int) {
 				hashlist := sendTransfer(acc, to, txn)
 				//发完交易之后,开始遍历hash,查询交易是否全部落账
@@ -83,8 +84,8 @@ func HandleTPS(ctx *cli.Context) error {
 				}*/
 				for i := range hashlist {
 					log.Info("query transaction status")
-					//fmt.Println("query transaction status")
-					//fmt.Println(hashlist[i])
+					fmt.Println("query transaction status")
+					fmt.Println(hashlist[i])
 					err = WaitTxConfirm(acc, hashlist[i], period)
 					if err != nil {
 						fmt.Println("error")
@@ -110,14 +111,9 @@ func HandleTPS(ctx *cli.Context) error {
 			}(acc, to, txn, period)
 		}
 		wg.Wait()
-		//看一下是不是还在时间内
 		fmt.Println("round")
-		if time.Now().Before(end) {
-			continue
-		} else {
-			break
-		}
 	}
+
 	fmt.Println("finish")
 	return nil
 }
@@ -140,7 +136,8 @@ func sendTransfer(acc *sdk.Account, to common.Address, txn int) []common.Hash {
 func WaitTxConfirm(acc *sdk.Account, hash common.Hash, period int) error {
 	//ticker := time.NewTicker(time.Second * 1)
 	end := time.Now().Add(time.Duration(period))
-	for {
+	for  {
+		fmt.Println("START")
 		_, pending, err := acc.TransactionByHash(hash)
 		if err != nil {
 			log.Info("failed to call TransactionByHash: %v", err)
