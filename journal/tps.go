@@ -139,35 +139,36 @@ func sendTransfer(acc *sdk.Account, to common.Address, txn int) []common.Hash {
 		} else {
 			//发送成功，将hash保存下来
 			hashlist = append(hashlist, txhash)
-			fmt.Println("transfer success")
+			//fmt.Println("transfer success")
 		}
 	}
 	return hashlist
 }
 
 func WaitTxConfirm(acc *sdk.Account, hash common.Hash, period int) error {
-	//ticker := time.NewTicker(time.Second * 1)
-	//end := time.Now().Add(time.Duration(period))
-	for {
+	ticker := time.NewTicker(time.Second * 1)
+	end := time.Now().Add(time.Duration(period))
+	for now := range ticker.C {
 		fmt.Println("START")
 		_, pending, err := acc.TransactionByHash(hash)
 		if err != nil {
-			fmt.Println("failed to call TransactionByHash: %v", err)
-			/*if time.Now().After(end) {
+			log.Info("failed to call TransactionByHash: %v", err)
+			if now.After(end) {
 				break
-			}*/
+			}
 			continue
 		}
 		if !pending {
 			fmt.Println("comfirm", hash)
 			break
-		}else{
-			fmt.Println("pending")
-		}
-		/*if time.Now().Before(end) {
+		} else {
+			fmt.Println("pending", hash)
 			continue
-		}*/
-		log.Info("Transaction pending for more than 1 min, check transaction %s on explorer yourself, make sure it's confirmed.", hash.Hex())
+		}
+		if now.Before(end) {
+			continue
+		}
+		log.Info("Tra nsaction pending for more than 1 min, check transaction %s on explorer yourself, make sure it's confirmed.", hash.Hex())
 		return nil
 	}
 	tx, err := acc.TransactionReceipt(hash)

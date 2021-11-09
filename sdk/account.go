@@ -146,7 +146,7 @@ func (c *Account) Epoch() (uint64, error) {
 	output := new(governance.MethodEpochOutput)
 	if err := utils.UnpackOutputs(aaa, method, output, enc); err != nil {
 		return 0, err
-	}
+	}                                   
 	return output.Epoch.Uint64(), nil
 }
 
