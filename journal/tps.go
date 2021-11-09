@@ -69,6 +69,7 @@ func HandleTPS(ctx *cli.Context) error {
 	to := master.Address()
 	//while
 	end := time.Now().Add(time.Duration(period))
+	fmt.Println(time.Now(),end)
 	for time.Now().Before(end) {
 		println("start multi process")
 		var wg sync.WaitGroup
