@@ -68,14 +68,16 @@ func HandleTPS(ctx *cli.Context) error {
 	// send transactions continuously
 	to := master.Address()
 	//while
-	end := time.Now().Add(time.Duration(period))
-	fmt.Println(time.Now(),end)
-	for time.Now().Before(end) {
+	//end := time.Now().Add(time.Duration(period))
+	//fmt.Println(time.Now(),end)
+	//t := time.NewTimer(5 * time.Minute)
+	//c1 := make(chan string, 1)
+	flag := false
+	for !flag {
 		println("start multi process")
 		var wg sync.WaitGroup
 		for _, acc := range accounts {
 			wg.Add(1)
-
 			go func(acc *sdk.Account, to common.Address, txn int, period int) {
 				hashlist := sendTransfer(acc, to, txn)
 				//发完交易之后,开始遍历hash,查询交易是否全部落账
@@ -113,8 +115,17 @@ func HandleTPS(ctx *cli.Context) error {
 		}
 		wg.Wait()
 		fmt.Println("round")
-	}
+		select {
 
+		case <-time.After(time.Second * time.Duration(period)):
+			fmt.Println("timeout 1")
+			flag = true
+		default:
+			fmt.Println("continue")
+			flag = false
+		}
+
+	}
 	fmt.Println("finish")
 	return nil
 }
@@ -137,7 +148,7 @@ func sendTransfer(acc *sdk.Account, to common.Address, txn int) []common.Hash {
 func WaitTxConfirm(acc *sdk.Account, hash common.Hash, period int) error {
 	//ticker := time.NewTicker(time.Second * 1)
 	end := time.Now().Add(time.Duration(period))
-	for  {
+	for {
 		fmt.Println("START")
 		_, pending, err := acc.TransactionByHash(hash)
 		if err != nil {
