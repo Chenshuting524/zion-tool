@@ -67,66 +67,79 @@ func HandleTPS(ctx *cli.Context) error {
 
 	// send transactions continuously
 	to := master.Address()
-	//while
-	//end := time.Now().Add(time.Duration(period))
-	//fmt.Println(time.Now(),end)
-	//t := time.NewTimer(5 * time.Minute)
-	//c1 := make(chan string, 1)
-	flag := false
-	for !flag {
-		println("start multi process")
-		var wg sync.WaitGroup
-		for _, acc := range accounts {
-			wg.Add(1)
-			go func(acc *sdk.Account, to common.Address, txn int, period int) {
-				hashlist := sendTransfer(acc, to, txn)
-				//发完交易之后,开始遍历hash,查询交易是否全部落账
-				/*if hashlist != nil {
-					fmt.Println("hashlist is not nil")
-
-				}*/
-				for i := range hashlist {
-					log.Info("query transaction status")
-					fmt.Println("query transaction status")
-					fmt.Println(hashlist[i])
-					err = WaitTxConfirm(acc, hashlist[i], period)
-					if err != nil {
-						fmt.Println("error")
-						continue
-					}
-					/*retryHash:
-					_, pending, err := acc.TransactionByHash(hashlist[i])
-					if err != nil {
-						fmt.Println(err)
-						log.Info("failed to call TransactionByHash: %v", err)
-						goto retryHash
-					}
-					if !pending {
-						fmt.Println("")
-						break
-					} else {
-						goto retryHash
-					}*/
-				}
-				fmt.Println("round1111")
-				defer wg.Done()
-				//等待所有线程结束后开启新一轮vi
-			}(acc, to, txn, period)
-		}
-		wg.Wait()
-		fmt.Println("round")
+	roundNo := 0
+	timeout := time.After(time.Second * time.Duration(period))
+	for loop := true; loop; {
 		select {
-
-		case <-time.After(time.Second * time.Duration(period)):
+		case <-timeout:
 			fmt.Println("timeout 1")
-			flag = true
+			loop = false
+			break
 		default:
-			fmt.Println("continue")
-			flag = false
+			var wg sync.WaitGroup
+			for _, acc := range accounts {
+				wg.Add(1)
+				go func(acc *sdk.Account, to common.Address, txn int, period int) {
+					hashlist := sendTransfer(acc, to, txn)
+					//发完交易之后,开始遍历hash,查询交易是否全部落账
+					for i := range hashlist {
+						log.Info("query transaction status")
+						fmt.Println("query transaction status")
+						//fmt.Println(hashlist[i])
+						err = WaitTxConfirm(acc, hashlist[i], period)
+						if err != nil {
+							fmt.Println("error")
+							continue
+						}
+					}
+					//fmt.Println("round1111")
+					defer wg.Done()
+					//等待所有线程结束后开启新一轮
+				}(acc, to, txn, period)
+			}
+			wg.Wait()
+			fmt.Println("round", roundNo+1, " finish")
 		}
-
 	}
-	fmt.Println("finish")
+
+	/*
+		for !flag {
+			println("start multi process")
+			var wg sync.WaitGroup
+			for _, acc := range accounts {
+				wg.Add(1)
+				go func(acc *sdk.Account, to common.Address, txn int, period int) {
+					hashlist := sendTransfer(acc, to, txn)
+					//发完交易之后,开始遍历hash,查询交易是否全部落账
+					for i := range hashlist {
+						log.Info("query transaction status")
+						fmt.Println("query transaction status")
+						//fmt.Println(hashlist[i])
+						err = WaitTxConfirm(acc, hashlist[i], period)
+						if err != nil {
+							fmt.Println("error")
+							continue
+						}
+					}
+					//fmt.Println("round1111")
+					defer wg.Done()
+					//等待所有线程结束后开启新一轮
+				}(acc, to, txn, period)
+			}
+			wg.Wait()
+			fmt.Println("round",roundNo+1," finish")
+
+			select {
+			case <-time.After(time.Second * time.Duration(period)):
+				fmt.Println("timeout 1")
+				flag = true
+			default:
+				fmt.Println("continue")
+				flag = false
+			}
+
+		}
+		fmt.Println("finish")*/
 	return nil
 }
 
@@ -149,7 +162,7 @@ func WaitTxConfirm(acc *sdk.Account, hash common.Hash, period int) error {
 	ticker := time.NewTicker(time.Second * 1)
 	end := time.Now().Add(time.Duration(period))
 	for now := range ticker.C {
-		fmt.Println("START")
+		//fmt.Println("START")
 		_, pending, err := acc.TransactionByHash(hash)
 		if err != nil {
 			log.Info("failed to call TransactionByHash: %v", err)
