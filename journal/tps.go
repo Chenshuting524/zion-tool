@@ -72,8 +72,8 @@ func HandleTPS(ctx *cli.Context) error {
 	for {
 		var wg sync.WaitGroup
 		for _, acc := range accounts {
-			wg.Add(1)
 			println("start multi process")
+			wg.Add(1)
 			go func(acc *sdk.Account, to common.Address, txn int, period int) {
 				hashlist := sendTransfer(acc, to, txn)
 				//发完交易之后,开始遍历hash,查询交易是否全部落账
@@ -150,6 +150,7 @@ func WaitTxConfirm(acc *sdk.Account, hash common.Hash, period int) error {
 			continue
 		}
 		if !pending {
+			fmt.Println("comfirm", hash)
 			break
 		}
 		if time.Now().Before(end) {
@@ -159,6 +160,7 @@ func WaitTxConfirm(acc *sdk.Account, hash common.Hash, period int) error {
 		return nil
 	}
 	tx, err := acc.TransactionReceipt(hash)
+	fmt.Println("receipt", hash)
 	if err != nil {
 		return fmt.Errorf("faild to get receipt %s", hash.Hex())
 	}
