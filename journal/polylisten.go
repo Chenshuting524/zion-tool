@@ -6,7 +6,6 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/urfave/cli"
 )
@@ -67,20 +66,19 @@ func PolyChainListen(ctx *cli.Context) error {
 			time.Sleep(500 * time.Millisecond)
 			goto retryTxCnt
 		}
-		totalTx = txn
+		
 
 		if endTime > startTime {
 			tps := totalTx / uint((endTime - preTime))
-			fmt.Println("calculate tps", "startBlock", startBlockNo, "endBlock", curBlockNum, "pre time", preTime, "end time", endTime, "pendingTx NUM", pendingTxNum, "total tx", totalTx, "tps", tps)
+			fmt.Println("calculate tps", "startBlock", startBlockNo, "endBlock", curBlockNum-1, "pre time", preTime, "end time", endTime, "pendingTx NUM", pendingTxNum, "total tx", totalTx, "tps", tps)
 		}
+		                     
+		totalTx = txn
 
 		curBlockNum += 1
 		cnt += 1
 	}
-	hash := common.HexToAddress("0x87723ef9cad09ea707ddb5b90d068a9add5ed9a770279c51556f9f86efa051d9")
 
-	_, pending, err := client.TransactionByHash(context.Background(), hash.Hash())
-
-	fmt.Println(pending, "finish listen")
+	fmt.Println("finish listen")
 	return nil
 }

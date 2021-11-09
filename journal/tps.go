@@ -98,8 +98,9 @@ func HandleTPS(ctx *cli.Context) error {
 				}(acc, to, txn, period)
 			}
 			wg.Wait()
-			fmt.Println("round", roundNo+1, " finish")
 		}
+		roundNo+=1
+		fmt.Println("round", roundNo, " finish")
 	}
 
 	/*
