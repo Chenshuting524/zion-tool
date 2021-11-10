@@ -99,8 +99,8 @@ func HandleTPS(ctx *cli.Context) error {
 			}
 			wg.Wait()
 		}
-		roundNo+=1
-		fmt.Println("round", roundNo, " finish")
+		roundNo += 1
+		fmt.Println("round", roundNo, " finish", time.Now())
 	}
 
 	/*
@@ -139,8 +139,8 @@ func HandleTPS(ctx *cli.Context) error {
 				flag = false
 			}
 
-		}
-		fmt.Println("finish")*/
+		}*/
+	fmt.Println("finish", time.Now())
 	return nil
 }
 

@@ -35,10 +35,24 @@ func PolyChainListen(ctx *cli.Context) error {
 	fmt.Println("get period and txn", "period", period, "txn", txn)
 
 	cnt := 0
-	totalTx := uint(0)
-	curBlockNum := startBlockNo
-	startTime, endTime, preTime := uint64(0), uint64(0), uint64(0)
+	curBlockNum := startBlockNo + 1
+	startTime, currentTime, preTime := uint64(0), uint64(0), uint64(0)
 	fmt.Println("Cycle listen")
+
+	//先查询前一个块的时间，是开始时间和tx总数
+	header0, err := client.HeaderByNumber(context.Background(), new(big.Int).SetUint64(startBlockNo))
+	preTime = header0.Time
+	if err != nil {
+		time.Sleep(500 * time.Millisecond)
+	}
+	txn0, err := client.TransactionCount(context.Background(), header0.Hash())
+	if err != nil {
+		time.Sleep(500 * time.Millisecond)
+	}
+	totalTx, accumulativeTx := txn0, txn0
+	fmt.Println("startBlock", startBlockNo,startTime)
+
+	//进入循环
 	for cnt < period {
 	retryHeader:
 		header, err := client.HeaderByNumber(context.Background(), new(big.Int).SetUint64(curBlockNum))
@@ -46,12 +60,15 @@ func PolyChainListen(ctx *cli.Context) error {
 			time.Sleep(500 * time.Millisecond)
 			goto retryHeader
 		}
-		if curBlockNum == startBlockNo {
-			startTime = header.Time
-		}
 
-		preTime = endTime
-		endTime = header.Time
+		currentTime = header.Time
+
+	retryTxCnt:
+		txn, err := client.TransactionCount(context.Background(), header.Hash())
+		if err != nil {
+			time.Sleep(500 * time.Millisecond)
+			goto retryTxCnt
+		}
 
 	retryPendingTX:
 		pendingTxNum, err := client.PendingTransactionCount(context.Background())
@@ -60,21 +77,15 @@ func PolyChainListen(ctx *cli.Context) error {
 			goto retryPendingTX
 		}
 
-	retryTxCnt:
-		txn, err := client.TransactionCount(context.Background(), header.Hash())
-		if err != nil {
-			time.Sleep(500 * time.Millisecond)
-			goto retryTxCnt
+		if currentTime > startTime {
+			tps := totalTx / uint((currentTime - preTime))
+			fmt.Println("calculate tps", "currentBlock", curBlockNum-1, "Header time",
+				preTime, "endTime", currentTime, "pendingTx NUM", pendingTxNum, "total tx", totalTx, "tps", tps, "accumulative", accumulativeTx)
 		}
-		
 
-		if endTime > startTime {
-			tps := totalTx / uint((endTime - preTime))
-			fmt.Println("calculate tps", "startBlock", startBlockNo, "endBlock", curBlockNum-1, "pre time", preTime, "end time", endTime, "pendingTx NUM", pendingTxNum, "total tx", totalTx, "tps", tps)
-		}
-		                     
+		preTime = currentTime
 		totalTx = txn
-
+		accumulativeTx += txn
 		curBlockNum += 1
 		cnt += 1
 	}
