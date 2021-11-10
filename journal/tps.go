@@ -173,24 +173,28 @@ func WaitTxConfirm(acc *sdk.Account, hash common.Hash, period int) error {
 			continue
 		}
 		if !pending {
-			fmt.Println("comfirm", hash)
+			//fmt.Println("to get receipt", hash)
 			break
 		} else {
 			fmt.Println("pending", hash)
+			if now.After(end) {
+				break
+			}
 			continue
 		}
 		if now.Before(end) {
 			continue
 		}
-		log.Info("Tra nsaction pending for more than 1 min, check transaction %s on explorer yourself, make sure it's confirmed.", hash.Hex())
+		log.Info("Transaction pending for more than 1 min, check transaction %s on explorer yourself, make sure it's confirmed.", hash.Hex())
 		return nil
 	}
+
 	tx, err := acc.TransactionReceipt(hash)
-	fmt.Println("receipt", hash)
 	if err != nil {
 		return fmt.Errorf("faild to get receipt %s", hash.Hex())
+	}else{
+		fmt.Println("confirm", hash)
 	}
-
 	if tx.Status == 0 {
 		return fmt.Errorf("receipt failed %s", hash.Hex())
 	}

@@ -56,4 +56,14 @@ var (
 		Usage: "use for Blocknum",
 		Value: 0,
 	}
+	BlockHashFlag = cli.StringFlag{
+		Name:  "blockhash",
+		Usage: "query block",
+		Value: "",
+	}
+	TransactionHashFlag = cli.StringFlag{
+		Name:  "transactionhash",
+		Usage: "query transaction hash",
+		Value: "",
+	}
 )

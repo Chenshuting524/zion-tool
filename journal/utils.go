@@ -35,6 +35,13 @@ func getPeriodAndTxn(ctx *cli.Context) (int, int, error) {
 	return period, txn, nil
 }
 
+func getBlockandTransaction(ctx *cli.Context) (int,string) {
+	blocknum := int(flag.Flag2Uint64(ctx, flag.BlockNumberFlag))
+	transactionhash := flag.Flag2string(ctx, flag.TransactionHashFlag)
+	return blocknum,transactionhash
+}
+
+
 func setGasPriceIncr(ctx *cli.Context) {
 	incr := flag.Flag2Uint64(ctx, flag.IncrGasPrice)
 	if incr > 0 {
@@ -45,6 +52,7 @@ func setGasPriceIncr(ctx *cli.Context) {
 func getInstanceNumber(ctx *cli.Context) int {
 	return int(flag.Flag2Uint64(ctx, flag.NumberFlag))
 }
+
 
 func generateMasterAccount(c *config.Config) (*sdk.Account, error) {
 	masterPK, err := crypto.HexToECDSA(c.MasterNodeKey)

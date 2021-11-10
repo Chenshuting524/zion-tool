@@ -44,6 +44,17 @@ var (
 			flag.PeriodFlag,
 		},
 	}
+	CmdQuery = cli.Command{
+		Name: "query",
+		Usage: "Try to query transaction or block",
+		Action: journal.QueryTransaction,
+		Flags:[]cli.Flag{
+			flag.ConfigPathFlag,
+			flag.BlockNumberFlag,
+			flag.BlockHashFlag,
+			flag.TransactionHashFlag,
+		},
+	}
 )
 
 func setupApp() *cli.App {
