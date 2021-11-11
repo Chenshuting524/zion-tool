@@ -17,7 +17,7 @@ func PolyChainListen(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	client, err := ethclient.Dial(c.NodeList[0])
+	client, err := ethclient.Dial(c.NodeList[1])
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func PolyChainListen(ctx *cli.Context) error {
 		time.Sleep(500 * time.Millisecond)
 	}
 	totalTx, accumulativeTx := txn0, txn0
-	fmt.Println("startBlock", startBlockNo,startTime)
+	fmt.Println("startBlock", startBlockNo, startTime)
 
 	//进入循环
 	for cnt < period {

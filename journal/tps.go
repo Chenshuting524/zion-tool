@@ -192,7 +192,7 @@ func WaitTxConfirm(acc *sdk.Account, hash common.Hash, period int) error {
 	tx, err := acc.TransactionReceipt(hash)
 	if err != nil {
 		return fmt.Errorf("faild to get receipt %s", hash.Hex())
-	}else{
+	} else {
 		fmt.Println("confirm", hash)
 	}
 	if tx.Status == 0 {
