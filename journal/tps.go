@@ -182,21 +182,25 @@ func WaitTxConfirm(acc *sdk.Account, hash common.Hash, period int) error {
 			}
 			continue
 		}
-		if now.Before(end) {
-			continue
-		}
-		log.Info("Transaction pending for more than 1 min, check transaction %s on explorer yourself, make sure it's confirmed.", hash.Hex())
-		return nil
 	}
+	for now_2 := range ticker.C {
+		tx, err := acc.TransactionReceipt(hash)
+		if err != nil {
+			fmt.Println("failed to get receipt %s", hash.Hex())
+			if now_2.After(end) {
+				return fmt.Errorf("failed to get receipt %s", hash.Hex())
+			} else {
+				continue
+			}
+		} else {
+			if tx.Status == 0 {
+				return fmt.Errorf("receipt failed %s", hash.Hex())
+			} else {
+				fmt.Println("confirm", hash)
+				break
+			}
 
-	tx, err := acc.TransactionReceipt(hash)
-	if err != nil {
-		return fmt.Errorf("faild to get receipt %s", hash.Hex())
-	} else {
-		fmt.Println("confirm", hash)
-	}
-	if tx.Status == 0 {
-		return fmt.Errorf("receipt failed %s", hash.Hex())
+		}
 	}
 
 	return nil
