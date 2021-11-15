@@ -17,7 +17,7 @@ func PolyChainListen(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	client, err := ethclient.Dial(c.NodeList[1])
+	client, err := ethclient.Dial(c.NodeList[0])
 	if err != nil {
 		return err
 	}

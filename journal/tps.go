@@ -88,7 +88,7 @@ func HandleTPS(ctx *cli.Context) error {
 						//fmt.Println(hashlist[i])
 						err = WaitTxConfirm(acc, hashlist[i], period)
 						if err != nil {
-							fmt.Println("error")
+							fmt.Println("error", err)
 							continue
 						}
 					}
