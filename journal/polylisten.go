@@ -88,8 +88,8 @@ func PolyChainListen(ctx *cli.Context) error {
 		accumulativeTx += txn
 		curBlockNum += 1
 		cnt += 1
-	}      
+	}
 
-	fmt.Println("finish listen")
+	fmt.Println("Finish listen")
 	return nil
 }
