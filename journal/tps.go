@@ -74,7 +74,6 @@ func HandleTPS(ctx *cli.Context) error {
 		case <-timeout:
 			fmt.Println("timeout 1")
 			loop = false
-			break
 		default:
 			var wg sync.WaitGroup
 			for _, acc := range accounts {
@@ -82,14 +81,26 @@ func HandleTPS(ctx *cli.Context) error {
 				go func(acc *sdk.Account, to common.Address, txn int, period int) {
 					hashlist := sendTransfer(acc, to, txn)
 					//发完交易之后,开始遍历hash,查询交易是否全部落账
-					for i := range hashlist {
-						log.Info("query transaction status")
-						fmt.Println("query transaction status")
-						//fmt.Println(hashlist[i])
-						err = WaitTxConfirm(acc, hashlist[i], period)
+					/*
+						for i := range hashlist {
+							log.Info("query transaction status")
+							fmt.Println("query transaction status")
+							//fmt.Println(hashlist[i])
+							err = WaitTxConfirm(acc, hashlist[i], period)
+							if err != nil {
+								fmt.Println("error", err)
+								continue
+							}
+						}*/
+
+					//只查看最后一笔落账没
+					for {
+						err = WaitTxConfirm(acc, hashlist[len(hashlist)-1], period)
 						if err != nil {
 							fmt.Println("error", err)
 							continue
+						} else {
+							break
 						}
 					}
 					//fmt.Println("round1111")
@@ -160,7 +171,7 @@ func sendTransfer(acc *sdk.Account, to common.Address, txn int) []common.Hash {
 }
 
 func WaitTxConfirm(acc *sdk.Account, hash common.Hash, period int) error {
-	ticker := time.NewTicker(time.Second * 1)
+	ticker := time.NewTicker(time.Millisecond * 1)
 	end := time.Now().Add(time.Duration(period))
 	for now := range ticker.C {
 		//fmt.Println("START")
@@ -185,9 +196,10 @@ func WaitTxConfirm(acc *sdk.Account, hash common.Hash, period int) error {
 	}
 	for now_2 := range ticker.C {
 		tx, err := acc.TransactionReceipt(hash)
+		end_wait := time.Now().Add(time.Duration(period))
 		if err != nil {
-			fmt.Println("failed to get receipt %s", hash.Hex())
-			if now_2.After(end) {
+			fmt.Println("failed to get receipt", hash.Hex())
+			if now_2.After(end_wait) {
 				return fmt.Errorf("failed to get receipt %s", hash.Hex())
 			} else {
 				continue
